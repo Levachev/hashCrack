@@ -1,2 +1,2 @@
 ### Запуск
-```sudo docker-compose down && sudo docker-compose build --no-cache && sudo docker-compose u```
+```sudo docker-compose down && sudo docker-compose build --no-cache && sudo docker-compose up```
