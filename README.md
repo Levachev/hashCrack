@@ -9,6 +9,14 @@
 
 Distributed system for cracking MD5 hashes
 
+## Architecture
+
+![architecture](./drow/dr.png)
+
+## Draw.io
+
+See [arch.drawio](./drow/dr.drawio)
+
 ### Requirements
 
 - python 3.10
