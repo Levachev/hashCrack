@@ -1,9 +1,71 @@
 services:
+  mongodb1:
+    image: mongo:latest
+    container_name: "mongodb1"
+    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
+    healthcheck:
+      test: >
+        echo "try { rs.status() }
+        catch (err) {
+        rs.initiate({_id:'rs0',members:[
+        {_id:0,host:'mongodb1:27017',priority:1},
+        {_id:1,host:'mongodb2:27018',priority:0.5},
+        {_id:2,host:'mongodb3:27019',priority:0.5}]})
+        }" | mongosh --port 27017 --quiet
+      interval: 5s
+      timeout: 30s
+      start_period: 0s
+      retries: 30
+    volumes:
+      - type: bind
+        source: ./data/db1
+        target: /data/db
+    logging:
+      driver: none
+
+  mongodb2:
+      image: mongo:latest
+      container_name: "mongodb2"
+      command: [ "--replSet", "rs0", "--bind_ip_all", "--port", "27018" ]
+      ports:
+        - "27018:27018"
+      volumes:
+        - type: bind
+          source: ./data/db2
+          target: /data/db
+      logging:
+        driver: none
+
+  mongodb3:
+      image: mongo:latest
+      container_name: "mongodb3"
+      command: [ "--replSet", "rs0", "--bind_ip_all", "--port", "27019"]
+      ports:
+        - "27019:27019"
+      volumes:
+        - type: bind
+          source: ./data/db3
+          target: /data/db
+      logging:
+        driver: none
+
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: "rabbitmq"
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - /rabbitmq-data/:/var/lib/rabbitmq/
+
   worker:
     build: ./worker
     deploy:
       mode: replicated
       replicas: ${WORKERS_COUNT}
+
+
   manager:
     build: ./manager
     ports:
@@ -11,3 +73,5 @@ services:
     environment:
       - WORKERS_COUNT=${WORKERS_COUNT}
       - MANAGER_PORT=${MANAGER_PORT}
+    depends_on:
+    - rabbitmq

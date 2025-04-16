@@ -1,12 +1,11 @@
 from threading import Thread
 
 from flask import Flask, request, jsonify, Response
-from worker_controller import WorkerControler
 
 class WorkerService:
-    def __init__(self):
+    def __init__(self, controller):
         self.app = Flask(__name__)
-        self.controller = WorkerControler()
+        self.controller = controller
 
         # Configure the app to parse JSON requests
         # Equivalent to app.use(express.json()) in JavaScript
@@ -35,9 +34,14 @@ class WorkerService:
 
         @self.app.route("/internal/api/worker/hash/crack/progress", methods=["GET"])
         def handle_progress():
+            print("ask progress")
             # Get progress from the controller and send it as a JSON response
             progress = self.controller.getProgress()
             return jsonify(progress)
+
+        @self.app.route("/internal/api/worker/healthcheck", methods=["GET"])
+        def healthcheck():
+            return jsonify(success=True)
 
     # Start the Flask server on the given port and log when started
     def start(self, port):

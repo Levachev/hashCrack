@@ -1,13 +1,14 @@
 # This code is a translation from JavaScript using Express framework to Python using Flask framework.
+import uuid
+
 from flask import Flask, request, jsonify
 
 from manager import Manager
 
-
 class ManagerService:
-    def __init__(self):
+    def __init__(self, manager):
         self.app = Flask(__name__)
-        self.manager = Manager()
+        self.manager = manager
 
         @self.app.route("/api/hash/crack", methods=['POST'])
         def crack_hash():
@@ -15,6 +16,7 @@ class ManagerService:
                 return '', 400
 
             request_data = {
+                'id': uuid.uuid4(),
                 'hash': request.json['hash'],
                 'maxLength': request.json['maxLength']
             }
