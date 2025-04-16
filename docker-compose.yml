@@ -1,0 +1,13 @@
+services:
+  worker:
+    build: ./worker
+    deploy:
+      mode: replicated
+      replicas: ${WORKERS_COUNT}
+  manager:
+    build: ./manager
+    ports:
+      - ${MANAGER_PORT}:${MANAGER_PORT}
+    environment:
+      - WORKERS_COUNT=${WORKERS_COUNT}
+      - MANAGER_PORT=${MANAGER_PORT}
