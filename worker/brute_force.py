@@ -38,7 +38,7 @@ class HashBruteForce:
                 k += 1
                 p = permutation.at(0, k)
 
-            if count % 1000 == 0:
+            if count % 10 == 0:
                 sleep(0)
 
         return result

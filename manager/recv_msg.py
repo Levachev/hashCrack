@@ -22,16 +22,19 @@ class Request:
             'data': data,
         }
 
-    def set_error_status(self):
+    def set_error_status(self, repo):
         if self.status == Status["InProgress"]:
             self.status = Status["Err"]
+        repo.update(rid=self.id, request=self)
 
     def in_progress(self):
         return self.status in (Status["InProgress"], Status["Partial"])
 
-    def add_data(self, data):
+    def add_data(self, data, repo):
         self.data.extend(data)
         self.status = Status["Partial"]
+        repo.update(rid=self.id, request=self)
 
-    def complete(self):
+    def complete(self, repo):
         self.status = Status["Ready"]
+        repo.update(rid=self.id, request=self)

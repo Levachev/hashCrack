@@ -1,10 +1,16 @@
 import os
+import threading
+import time
+
+import schedule
 from dotenv import load_dotenv, find_dotenv
 import json
 import requests
 
 from brute_force import HashBruteForce
 from task_progress import TaskProgress, TaskProgressSize
+from publisher import Publisher
+
 
 class WorkerControler:
     buffer = bytearray(TaskProgressSize)
@@ -31,6 +37,16 @@ class WorkerControler:
             "count": 0
         }
         self.completed = True
+        self.send_publisher = Publisher()
+        thread = threading.Thread(target=self.schedule_actions, args=())
+        thread.start()
+
+    def schedule_actions(self):
+
+        schedule.every(10).seconds.do(self.print_pregress)
+        while True:
+            schedule.run_pending()
+            time.sleep(1)
 
     def processTask(self, task):
         if not self.completed:
@@ -48,11 +64,12 @@ class WorkerControler:
         result = hash.crackHash(self.currentTask, l)
 
         self.completed = True
-        self.__sendResult(result)
+        self.__sendResult2(result)
         print("result: ", result)
         return True
 
     def getProgress(self):
+        print("getProgress")
         progress = {
             "processed": self.taskProgress.current,
             "count": self.currentTask.get("count")
@@ -74,3 +91,18 @@ class WorkerControler:
             print(reason)
         else:
             print("Result sended")
+
+    def __sendResult2(self, result):
+        data = json.dumps({
+            "requestId": self.currentTask["requestId"],
+            "data": result
+        })
+        self.send_publisher.call(data)
+
+    def print_pregress(self):
+        progress = {
+            "processed": self.taskProgress.current,
+            "count": self.currentTask.get("count")
+        }
+        percent = int((progress["processed"] / progress["count"]) * 100) if progress["count"] else 0
+        print(f"Progress {progress['processed']}/{progress['count']} {percent}%")
